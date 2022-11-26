@@ -42,6 +42,7 @@ class Transformer2DModelOutput(BaseOutput):
 if is_xformers_available():
     import xformers
     import xformers.ops
+    from xformers.components.attention import NystromAttention
 else:
     xformers = None
 
@@ -532,6 +533,9 @@ class CrossAttention(nn.Module):
         self.to_out.append(nn.Linear(inner_dim, query_dim))
         self.to_out.append(nn.Dropout(dropout))
 
+        if is_xformers_available():
+            self.Nystrom_Attention = NystromAttention(dropout, self.heads)
+
     def reshape_heads_to_batch_dim(self, tensor):
         batch_size, seq_len, dim = tensor.shape
         head_size = self.heads
@@ -625,7 +629,8 @@ class CrossAttention(nn.Module):
         query = query.contiguous()
         key = key.contiguous()
         value = value.contiguous()
-        hidden_states = xformers.ops.memory_efficient_attention(query, key, value, attn_bias=None)
+        # hidden_states = xformers.ops.memory_efficient_attention(query, key, value, attn_bias=None)
+        hidden_states = self.Nystrom_Attention(query, key, value)
         hidden_states = self.reshape_batch_dim_to_heads(hidden_states)
         return hidden_states
 
