@@ -534,7 +534,7 @@ class CrossAttention(nn.Module):
         self.to_out.append(nn.Dropout(dropout))
 
         if is_xformers_available():
-            self.Nystrom_Attention = NystromAttention(dropout, self.heads, num_landmarks=128)
+            self.Nystrom_Attention = NystromAttention(dropout, self.heads, num_landmarks=256)
 
     def reshape_heads_to_batch_dim(self, tensor):
         batch_size, seq_len, dim = tensor.shape
