@@ -42,7 +42,7 @@ class Transformer2DModelOutput(BaseOutput):
 if is_xformers_available():
     import xformers
     import xformers.ops
-    from xformers.components.attention import NystromAttention
+    from xformers.components.attention import NystromAttention, OrthoFormerAttention
 else:
     xformers = None
 
@@ -534,7 +534,8 @@ class CrossAttention(nn.Module):
         self.to_out.append(nn.Dropout(dropout))
 
         if is_xformers_available():
-            self.Nystrom_Attention = NystromAttention(dropout, self.heads, num_landmarks=256)
+            # self.Nystrom_Attention = NystromAttention(dropout, self.heads, num_landmarks=256)
+            self.Nystrom_Attention = OrthoFormerAttention(dropout, num_landmarks=64)
 
     def reshape_heads_to_batch_dim(self, tensor):
         batch_size, seq_len, dim = tensor.shape
